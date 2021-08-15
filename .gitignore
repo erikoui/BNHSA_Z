@@ -139,9 +139,8 @@ dist
 # react
 
 # dependencies
-src_fe/build
-src_fe/public
-src_fe/node_modules
+build
+node_modules
 /.pnp
 .pnp.js
 

@@ -1,40 +1,41 @@
 {
+  "description": "gggg",
+  "author": "erikoui",
+  "build": {
+    "appId": "<com.bnhsaz>"
+  },
+  "main": "public/electron.js",
+  "homepage": "./",
   "name": "bnhsa_z",
-  "version": "0.0.1",
-  "description": "BNHSA_Z",
-  "main": "electron-starter.js",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "electron-builder": "^22.11.7",
+    "electron": "^13.1.9"
+  },
   "dependencies": {
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
+    "concurrently": "^6.2.1",
+    "cross-env": "^7.0.3",
+    "electron-is-dev": "^2.0.0",
+    "promises": "^0.2.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
+    "wait-on": "^6.0.0",
     "web-vitals": "^1.1.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "react-start": "react-scripts start",
+    "react-build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "electron": "electron .",
-    "electron-dev": "set ELECTRON_START_URL=http://localhost:3000 && electron .",
-    "dev" : "nf start"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/erikoui/BNHSA_Z.git"
-  },
-  "author": "erikoui",
-  "license": "GPL-3.0-or-later",
-  "bugs": {
-    "url": "https://github.com/erikoui/BNHSA_Z/issues"
-  },
-  "homepage": "./",
-  "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.59",
-    "electron": "^13.1.9",
-    "foreman": "^3.0.1"
+    "electron-build": "electron-builder",
+    "release": "npm run react-build && electron-builder --publish=always",
+    "build": "npm run react-build && npm run electron-build",
+    "start": "concurrently \"cross-env BROWSER=none npm run react-start\" \"wait-on http://localhost:3000 && electron .\""
   },
   "eslintConfig": {
     "extends": [
