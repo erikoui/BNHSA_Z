@@ -1,28 +1,47 @@
-// main.js: Front end entry point for BNHSA_Z. 
+// electron-starter.js: Front end's backend entry point for BNHSA_Z. 
 // Copyright (C) 2021  erikoui
 // main.js
 
 // Modules to control application life and create native browser window
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const debug=true;
+const url = require('url');
 
-function createWindow () {
+// Keep a global reference of the window object, if you don't, the window will
+// be closed automatically when the JavaScript object is garbage collected.
+let mainWindow;
+const debug = true;
+
+function createWindow() {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
-    }
-  })
+    },
+  });
 
-  mainWindow.loadFile('index.html');
+  // and load the index.html of the app.
+  const startUrl = process.env.ELECTRON_START_URL || url.format({
+    pathname: path.join(__dirname, './public/index.html'),
+    protocol: 'file:',
+    slashes: true
+  });
+  mainWindow.loadURL(startUrl);
 
   // Open the DevTools.
-  if(debug){
-      mainWindow.webContents.openDevTools();
+  if (debug) {
+    mainWindow.webContents.openDevTools();
   }
+
+  // Emitted when the window is closed.
+  mainWindow.on('closed', function () {
+    // Dereference the window object, usually you would store windows
+    // in an array if your app supports multi windows, this is the time
+    // when you should delete the corresponding element.
+    mainWindow = null
+  })
 }
 
 // This method will be called when Electron has finished
