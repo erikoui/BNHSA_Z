@@ -1,0 +1,24 @@
+{
+  "name": "bnhsa_z",
+  "version": "0.0.1",
+  "description": "BNHSA_Z",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erikoui/BNHSA_Z.git"
+  },
+  "author": "erikoui",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/erikoui/BNHSA_Z/issues"
+  },
+  "homepage": "https://github.com/erikoui/BNHSA_Z#readme",
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.59",
+    "electron": "^13.1.9"
+  }
+}
