@@ -3,8 +3,9 @@
 Structural analysis *and design* with good UI
 
 ## Running the frontend
-Navigate to frontend directory `cd src_fe`
-Install dependencies `npm i`
+Navigate to frontend directory: `cd src_fe`
+
+Install dependencies: `npm i`
 
 Development run
 ```
@@ -16,11 +17,13 @@ Production build
 npm run build
 ```
 
-Main entry point is `src_fe/public/electron.js`
+Main entry point is: `src_fe/public/electron.js`
+
+React files are in: `src_fe/src`
 
 
 ## Running the backend
-It's supposed to be ran by the front end
+It's supposed to be ran by the front end, but for now:
 ```
 ./be.exe <input file>
 ```
