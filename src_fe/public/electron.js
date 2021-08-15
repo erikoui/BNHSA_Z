@@ -1,7 +1,9 @@
-const { app, BrowserWindow } = require('electron');
+const { app, Menu, BrowserWindow, dialog } = require('electron');
 const path = require("path");
 const isDev = require("electron-is-dev");
+
 let mainWindow;
+const isMac = process.platform === 'darwin'
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -33,6 +35,27 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+    
+const template = [
+    {
+      role: 'help',
+      submenu: [
+        {
+          label: 'About',
+          click: async () => {
+            dialog.showMessageBoxSync({
+                message:"BNHSA_Z (c) 2021 erikoui",
+                type: "info",
+                title: "About"
+            })
+          }
+        }
+      ]
+    }
+  ]
+  
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
     createWindow();
   })
   
@@ -46,6 +69,6 @@ app.on('activate', function () {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', function () {
-    if (process.platform !== 'darwin') app.quit();
+    if (!isMac) app.quit();
 })
 
