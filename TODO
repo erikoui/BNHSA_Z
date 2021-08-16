@@ -1,1 +1,6 @@
-Make this file
+Make 2d representation of each floor (shows location of cols and limits)
+Make edit member properties window to edit position, limits, etc
+Make move tool and multi edit tool
+DWG import for 2d
+Generate FE model from 3d model
+gradient descent optimization of cols and beems
