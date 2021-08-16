@@ -1,4 +1,4 @@
-/* index.js: Main renderer for React 
+/* ToolBar.js: React component for the toolbar
 *
 *  Copyright (C) 2021 erikoui
 *
@@ -16,15 +16,25 @@
 *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import DesignWindow from './DesignWindow.js';
-import FrontendsBackend from './FrontendsBackend';
+import React, { Component } from 'react';
+import './ToolBar.css'
 
-let frontendsBackend=new FrontendsBackend();
+const electron = window.require('electron');
+const remote = electron.remote
+const {dialog} = remote
 
-ReactDOM.render(
-  <DesignWindow frontendsBackend={frontendsBackend}/>,
-  document.getElementById('root')
-);
+class ToolBar extends Component {
+    render() {
+        return (<div className="tool-bar">
+            <button onClick={this.open}>Open</button>
+        </div>
+        );
+    }
+    open=()=> {
+        let filenames=dialog.showOpenDialogSync({title:"Open file"});
+        this.props.frontendsBackend.open(filenames[0]);
+        //console.log(this.props.frontendsBackend.modelDb.raw);
+    }
+}
+
+export default ToolBar;

@@ -1,0 +1,11 @@
+.design-window{
+    box-sizing: border-box;
+    background: #000;
+    width:100vw;
+    height: 100vh;
+    color: #999;
+    float: center;
+    margin-right: -1px;
+    margin-top: -1px;
+    padding: 0;
+  }
