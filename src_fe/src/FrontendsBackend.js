@@ -25,6 +25,8 @@ class FrontendsBackend{
     constructor(){
         this.filename="";
         this.modelDb={raw:""};
+        this.modelDb.cols=[];
+        this.modelDb.beams=[];
     }
 
     // Function open
@@ -37,7 +39,7 @@ class FrontendsBackend{
         // Store file info into this object.
         this.filename=filename;
         this.modelDb.raw=fs.readFileSync(filename,{flag:'r'});
-
+        this.modelDb=JSON.parse(this.modelDb.raw);
         // Send event to electron.js where it can be used or bounced back
         ipcRenderer.send('modelChanged');
     }

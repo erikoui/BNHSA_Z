@@ -20,22 +20,23 @@
 import React, { Component } from 'react';
 import ToolBar from './ToolBar.js';
 import './DesignWindow.css';
+import ThreeD from './ThreeD.js';
 const { ipcRenderer } = window.require("electron");
 
 class DesignWindow extends Component {
     render() {
-
+        console.log(this.props.frontendsBackend);
         return (
             <div className="design-window">
                 <ToolBar frontendsBackend={this.props.frontendsBackend} />
-                {this.props.frontendsBackend.modelDb.raw}
+                <ThreeD modelDb={this.props.frontendsBackend.modelDb}/>
             </div>
         );
     }
     
-    componentDidMount() {
+    componentDidMount=()=> {
         ipcRenderer.on('modelChanged', () => {
-            console.log('model changed');
+            this.forceUpdate();
         });
       }
      
