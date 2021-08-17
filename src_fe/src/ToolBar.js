@@ -34,10 +34,15 @@ class ToolBar extends Component {
     }
     open=()=> {
         let filenames=dialog.showOpenDialogSync({title:"Open file"});
-        this.props.frontendsBackend.open(filenames[0]);
+        if(filenames){
+            this.props.frontendsBackend.open(filenames[0]);
+        }
     }
     save=()=> {
-        // TODO[Critical]: Save function
+        let filename=dialog.showSaveDialogSync({title:"Save file"});
+        if(filename){
+            this.props.frontendsBackend.save(filename);
+        }
     }
     genFEM=()=>{
         // TODO[Enhancement]: Ask to confirm if the user made changes to the FEModel

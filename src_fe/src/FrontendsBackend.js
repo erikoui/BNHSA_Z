@@ -38,15 +38,16 @@ class FrontendsBackend {
     // Args: filename{String}: the path to the model file
     // Loads a model file into the modelDb.
     open(filename) {
-        // TODO: Make frontentsBackend.open parse the file and save it in a form the software can render and process.
-        // This will require also designing a file format.
-
-        // Store file info into this object.
         this.filename = filename;
         this.modelDb.raw = fs.readFileSync(filename, { flag: 'r' });
         this.modelDb = { ...JSON.parse(this.modelDb.raw) };
         // Send event to electron.js where it can be used or bounced back
         ipcRenderer.send('modelChanged');
+    }
+
+    save(filename) {
+        this.filename = filename;
+        fs.writeFileSync(filename, JSON.stringify(this.modelDb));
     }
 
     dist3d(p1, p2) {
