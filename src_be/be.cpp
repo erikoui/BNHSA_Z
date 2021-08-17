@@ -3,7 +3,11 @@
 
 #include <iostream>
 #include <stdlib.h>
+// I dont know how to setup include directories
+#include "C:/eigen/Eigen/Dense"
 
+using Eigen::MatrixXd;
+ 
 int main(int argc, char *argv[])
 {
     // Show about box and exit with no arguments
@@ -19,4 +23,6 @@ int main(int argc, char *argv[])
                   << std::endl;
         exit(0);
     }
+
+    
 }
