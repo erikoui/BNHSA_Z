@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
-            "args": ["test_open.json"],
+            "args": ["../test_save.json"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
