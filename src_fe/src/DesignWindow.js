@@ -29,16 +29,15 @@ class DesignWindow extends Component {
         return (
             <div className="design-window">
                 <ToolBar frontendsBackend={this.props.frontendsBackend} />
-                <ThreeD modelDb={this.props.frontendsBackend.modelDb}/>
+                <ThreeD modelDb={this.props.frontendsBackend.modelDb} />
             </div>
         );
     }
-    
-    componentDidMount=()=> {
+
+    componentDidMount = () => {
         ipcRenderer.on('modelChanged', () => {
             this.forceUpdate();
         });
-      }
-     
+    }
 }
 export default DesignWindow;

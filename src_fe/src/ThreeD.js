@@ -22,9 +22,12 @@ import * as THREE from "three";
 import sanid from "./textures/sanid.png";
 import { useThree, createPortal } from '@react-three/fiber'
 import { OrbitControls, OrthographicCamera, useCamera } from '@react-three/drei'
-import { PerspectiveCamera, Vector3 } from "three";
+import { Vector3 } from "three";
 
+// TODO[Enhancement]: Fix lighting and shadows and textures
+// maybe also write member name on the boxes
 
+let keyCounter;
 // Shows a viewCube on the top right
 function Viewcube() {
     const { gl, scene, camera, size } = useThree()
@@ -69,35 +72,22 @@ function Viewcube() {
     )
 }
 
-// makes a box. set dimensions using scale property
-const Box = (props) => {
-    // This reference will give us direct access to the mesh
-    const mesh = useRef();
-
-    // Set up state for the hovered and active state 
-    const [active, setActive] = useState(false);
-    const [hovered, setHover] = useState(false);
-    // Rotate mesh every frame, this is outside of React without overhead
-    useFrame(() => {
-        //this is for local animation of the box
-        //mesh.current.rotation.x = mesh.current.rotation.y += 0.01;
-    });
-
+// makes a cube. with center and size
+const FENode = (props) => {
     // Load texture
-    const texture_sanid = useMemo(() => new THREE.TextureLoader().load(sanid), []);
+    //const texture_sanid = useMemo(() => new THREE.TextureLoader().load(sanid), []);
 
+    let size = props.size;
+    let pos = new THREE.Vector3(props.c[0], props.c[1], props.c[2]);// boxes are created on their center
     return (
         <mesh
             {...props}
-            ref={mesh}
-            onClick={(e) => setActive(!active)}
-            onPointerOver={(event) => setHover(true)}
-            onPointerOut={(event) => setHover(false)}
+            // here u can do stuff like onClick={(e) => ...}
+            position={pos}
         >
-            <boxBufferGeometry args={[1, 1, 1]} />
-            <meshBasicMaterial attach="material" transparent side={THREE.DoubleSide}>
-                <primitive attach="map" object={texture_sanid} />
-            </meshBasicMaterial>
+            <boxGeometry args={[size, size, size]} />
+            <meshStandardMaterial attach="material" transparent side={THREE.DoubleSide} color={"red"}>
+            </meshStandardMaterial>
         </mesh>
     );
 }
@@ -107,8 +97,8 @@ const ConcreteMember = (props) => {
     const shp = useMemo(() => {
         const rectShape = new THREE.Shape()
             .moveTo(0, 0)
-            .lineTo(props.d, 0)
-            .lineTo(props.d, props.w)
+            .lineTo(-props.d, 0)
+            .lineTo(-props.d, props.w)
             .lineTo(0, props.w);
         return rectShape;
     }, [props.d, props.w]);
@@ -129,28 +119,97 @@ const ConcreteMember = (props) => {
     return (
         <mesh>
             <extrudeGeometry attach="geometry" args={[shp, extrudeSettings]} />
-            <meshBasicMaterial attach="material" transparent side={THREE.DoubleSide}>
+            <meshStandardMaterial opacity={0.5} attach="material" transparent side={THREE.DoubleSide}>
                 <primitive attach="map" object={texture_sanid} />
-            </meshBasicMaterial>
+            </meshStandardMaterial>
         </mesh>
     )
 }
 
-const makeBoxesArray = (modelDb) => {
+const FERod = (props) => {
+    // props: d is the x or z size and w is the y size. 
+    const shp = useMemo(() => {
+        const rectShape = new THREE.Shape()
+            .moveTo(-parseFloat(props.d) / 2, -parseFloat(props.w) / 2)
+            .lineTo(parseFloat(props.d) / 2, -parseFloat(props.w) / 2)
+            .lineTo(parseFloat(props.d) / 2, parseFloat(props.w) / 2)
+            .lineTo(-parseFloat(props.d) / 2, parseFloat(props.w) / 2);
+        return rectShape;
+    }, [props.d, props.w]);
+    const ep = useMemo(() => {
+        const path = new THREE.LineCurve3(
+            new Vector3(props.start[0], props.start[1], props.start[2]),
+            new Vector3(props.end[0], props.end[1], props.end[2])
+        );
+        return path;
+    }, [props.start, props.end]);
+
+
+    var extrudeSettings = {
+        steps: 1,
+        extrudePath: ep
+    };
+
+    return (
+        <mesh>
+            <extrudeGeometry attach="geometry" args={[shp, extrudeSettings]} />
+            <meshStandardMaterial color={"blue"}>
+            </meshStandardMaterial>
+        </mesh>
+    )
+}
+
+const makeConcretesArray = (modelDb) => {
     // Populate boxes array (each box is an element of the model)
-    let boxes = [];
+    let concretes = [];
+
     // Columns first
     for (let i = 0; i < modelDb.cols.length; i++) {
         let col = modelDb.cols[i];
-        boxes.push(<ConcreteMember start={col.start} end={col.end} w={col.size.w} d={col.size.l} />)
+        concretes.push(<ConcreteMember start={col.start} end={col.end} w={col.size.x} d={col.size.y} key={keyCounter++} />)
     }
 
     // Now do beams
     for (let i = 0; i < modelDb.beams.length; i++) {
         let beam = modelDb.beams[i];
-        boxes.push(<ConcreteMember start={beam.start} end={beam.end} w={beam.size.w} d={beam.size.h} />)
+        concretes.push(<ConcreteMember start={beam.start} end={beam.end} w={beam.size.x} d={beam.size.z} key={keyCounter++} />)
     }
-    return boxes;
+    return concretes;
+}
+
+const makeFEArray = (modelDb) => {
+    let nodesize = 0.3;
+    let rodsize = 0.15;
+    let mesh = [];
+    for (let i = 0; i < modelDb.FEnodes.length; i++) {
+        mesh.push(<FENode c={modelDb.FEnodes[i].coords} size={nodesize} key={keyCounter++} />)
+    }
+    for (let i = 0; i < modelDb.FEmembers.length; i++) {
+        // find start,end
+        let fromCoords = undefined;
+        let toCoords = undefined;
+        let found1 = false;
+        let found2 = false;
+
+        for (let j = 0; j < modelDb.FEnodes.length; j++) {
+            if (modelDb.FEnodes[j].name === modelDb.FEmembers[i].from) {
+                fromCoords = modelDb.FEnodes[j].coords;
+                found1 = true;
+            }
+            if (modelDb.FEnodes[j].name === modelDb.FEmembers[i].to) {
+                toCoords = modelDb.FEnodes[j].coords;
+                found2 = true;
+            }
+            if (found1 && found2) {
+                console.log("found start and fin")
+                break;
+            }
+        }
+        if (found1 && found2) {
+            mesh.push(<FERod start={fromCoords} end={toCoords} w={rodsize} d={rodsize} key={keyCounter++} />)
+        }
+    }
+    return mesh;
 }
 
 const CameraControls = () => {
@@ -172,20 +231,22 @@ const CameraControls = () => {
             ref={controls}
             target={[1, 1, 1.5]}
             args={[camera, domElement]}
-             />
+        />
     );
 };
 
-
 const ThreeD = (modelDb) => {
+    keyCounter = 0;
     THREE.Object3D.DefaultUp.set(0, 0, 1);
     let md = modelDb.modelDb;//idk why this is nescessary but dont remove it
+    console.log(md);
     return (
         <Canvas>
-            <ambientLight intensity={0.5} />
-            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-            <pointLight position={[-10, -10, -10]} />
-            {makeBoxesArray(md)}
+            <ambientLight intensity={0.1} />
+            <pointLight position={[100, 150, 120]} />
+            <axesHelper size={5} />
+            {makeConcretesArray(md)}
+            {makeFEArray(md)}
             <CameraControls />
             <Viewcube />
         </Canvas>

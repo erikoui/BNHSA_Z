@@ -27,13 +27,24 @@ class ToolBar extends Component {
     render() {
         return (<div className="tool-bar">
             <button onClick={this.open}>Open</button>
+            <button onClick={this.save}>Save</button>
+            <button onClick={this.genFEM}>FE</button>
         </div>
         );
     }
     open=()=> {
         let filenames=dialog.showOpenDialogSync({title:"Open file"});
         this.props.frontendsBackend.open(filenames[0]);
-        //console.log(this.props.frontendsBackend.modelDb.raw);
+    }
+    save=()=> {
+        // TODO[Critical]: Save function
+    }
+    genFEM=()=>{
+        // TODO[Enhancement]: Ask to confirm if the user made changes to the FEModel
+        // Also maybe remember which ones were edited and only update the new ones.
+        // This is not a critical task.
+        this.props.frontendsBackend.generateFEModel();
+        // TODO[Critical]: Toggle 3d view between the realistic and the FE model.
     }
 }
 
