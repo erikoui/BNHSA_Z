@@ -109,10 +109,17 @@ int main(int argc, char* argv[])
         A(i) = 0.25 * 0.5;
         L(i) = 3;
         G(i) = 10000;//shear modulus
-        //TODO[Critical]: calculate rotations here
-        double thetax = 0;// axial rotation
-        double thetay = 0;// rotation in strong axis (think up-down on a standard I-beam)
-        double thetaz = 0;// rotation in weak axis (left-right)
+
+        // Calculate rotations
+        double x1=N(C(i,0),0);
+        double x2=N(C(i,1),0);
+        double y1=N(C(i,0),1);
+        double y2=N(C(i,1),1);
+        double z1=N(C(i,0),2);
+        double z2=N(C(i,1),2);
+        double thetax = 0;// axial rotation, could be user-defined in future
+        double thetay = atan2(x2-x1, z2-z1);// rotation in strong axis (think up-down on a standard I-beam)
+        double thetaz = atan2(x2-x1, y2-y1);// rotation in weak axis (left-right)
         Rx[i].resize(3, 3);
         Ry[i].resize(3, 3);
         Rz[i].resize(3, 3);
@@ -170,6 +177,7 @@ int main(int argc, char* argv[])
         Matrix3d zeros;
         zeros<<0,0,0,0,0,0,0,0,0;
         ChonkeR<<R,zeros,zeros,zeros,zeros,R,zeros,zeros,zeros,zeros,R,zeros,zeros,zeros,zeros,R;
+        std::cout << std::endl << "Rotation matrix " << i << std::endl;
         std::cout<<ChonkeR;
         K_rotated_local[i]=K_local[i]*ChonkeR;
     }
