@@ -72,26 +72,6 @@ function Viewcube() {
     )
 }
 
-// makes a cube. with center and size
-const FENode = (props) => {
-    // Load texture
-    //const texture_sanid = useMemo(() => new THREE.TextureLoader().load(sanid), []);
-
-    let size = props.size;
-    let pos = new THREE.Vector3(props.c[0], props.c[1], props.c[2]);// boxes are created on their center
-    return (
-        <mesh
-            {...props}
-            // here u can do stuff like onClick={(e) => ...}
-            position={pos}
-        >
-            <boxGeometry args={[size, size, size]} />
-            <meshStandardMaterial attach="material" transparent side={THREE.DoubleSide} color={"red"}>
-            </meshStandardMaterial>
-        </mesh>
-    );
-}
-
 const ConcreteMember = (props) => {
     const texture_sanid = useMemo(() => new THREE.TextureLoader().load(sanid), []);
     const shp = useMemo(() => {
@@ -126,8 +106,50 @@ const ConcreteMember = (props) => {
     )
 }
 
+// yeah this is ugly af
+function makeLabelCanvas(size, name) {
+    const borderSize = 50;
+    const ctx = document.createElement('canvas').getContext('2d');
+    const font = `20px arial`;
+    ctx.font = font;
+    // measure how long the name will be
+    const doubleBorderSize = borderSize * 2;
+    const width = ctx.measureText(name).width + doubleBorderSize;
+    const height = size + doubleBorderSize;
+    ctx.canvas.width = width;
+    ctx.canvas.height = height;
+
+    // need to set font again after resizing canvas
+    ctx.font = font;
+    ctx.textBaseline = 'top';
+
+    ctx.fillStyle = 'white';
+    ctx.fillText(name, borderSize, borderSize);
+
+    return ctx.canvas;
+}
+
+// makes a cube. with center and size
+const FENode = (props) => {
+    // Load texture
+    //const texture_sanid = useMemo(() => new THREE.TextureLoader().load(sanid), []);
+
+    let size = props.size;
+    let pos = new THREE.Vector3(props.c[0], props.c[1], props.c[2]);// boxes are created on their center
+    return (
+        <mesh
+            {...props}
+            // here u can do stuff like onClick={(e) => ...}
+            position={pos}
+        >
+            <boxGeometry args={[size, size, size]} />
+            <meshStandardMaterial attach="material" transparent side={THREE.DoubleSide} color={"red"}>
+            </meshStandardMaterial>
+        </mesh>
+    );
+}
+
 const FERod = (props) => {
-    // props: d is the x or z size and w is the y size. 
     const shp = useMemo(() => {
         const rectShape = new THREE.Shape()
             .moveTo(-parseFloat(props.d) / 2, -parseFloat(props.w) / 2)
@@ -159,6 +181,18 @@ const FERod = (props) => {
     )
 }
 
+const FElabel = (props) => {
+    const canvas = makeLabelCanvas(10, props.text);
+    const texture = new THREE.CanvasTexture(canvas);
+    return (
+        <sprite
+            {...props}>
+            <planeBufferGeometry width={0.2} height={0.2} />
+            <spriteMaterial map={texture} side={THREE.DoubleSide} transparent={true} opacity={1} depthWrite={false}></spriteMaterial>
+        </sprite>
+    )
+}
+
 const makeConcretesArray = (modelDb) => {
     // Populate boxes array (each box is an element of the model)
     let concretes = [];
@@ -181,9 +215,13 @@ const makeFEArray = (modelDb) => {
     let nodesize = 0.3;
     let rodsize = 0.15;
     let mesh = [];
+    let offset=-0.2;// how far from the node or member to put the 
+    // Draw nodes
     for (let i = 0; i < modelDb.FEnodes.length; i++) {
         mesh.push(<FENode c={modelDb.FEnodes[i].coords} size={nodesize} key={keyCounter++} />)
+        mesh.push(<FElabel text={"N" + i} position={[modelDb.FEnodes[i].coords[0]+offset,modelDb.FEnodes[i].coords[1]+offset,modelDb.FEnodes[i].coords[2]+offset]} />);
     }
+    // Draw members
     for (let i = 0; i < modelDb.FEmembers.length; i++) {
         // find start,end
         let fromCoords = undefined;
@@ -206,7 +244,9 @@ const makeFEArray = (modelDb) => {
             }
         }
         if (found1 && found2) {
+            
             mesh.push(<FERod start={fromCoords} end={toCoords} w={rodsize} d={rodsize} key={keyCounter++} />)
+            mesh.push(<FElabel text={"M" + i} position={[(fromCoords[0] + toCoords[0]) / 2+offset, (fromCoords[1] + toCoords[1]) / 2+offset, (fromCoords[2] + toCoords[2]) / 2+offset]} />);
         }
     }
     return mesh;
@@ -245,8 +285,8 @@ const ThreeD = (modelDb) => {
             <ambientLight intensity={0.1} />
             <pointLight position={[100, 150, 120]} />
             <axesHelper size={5} />
-            {makeConcretesArray(md)}
             {makeFEArray(md)}
+            {makeConcretesArray(md)}
             <CameraControls />
             <Viewcube />
         </Canvas>
