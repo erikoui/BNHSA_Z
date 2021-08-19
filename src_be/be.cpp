@@ -8,6 +8,7 @@
 #include <stdlib.h>
 // I dont know how to setup include directories
 #include "C:/eigen/Eigen/Dense"
+#include "C:/eigen/Eigen/Sparse"
 #include "json.hpp"
 #include <iomanip>
 #include <fstream>
@@ -111,15 +112,15 @@ int main(int argc, char* argv[])
         G(i) = 10000;//shear modulus
 
         // Calculate rotations
-        double x1=N(C(i,0),0);
-        double x2=N(C(i,1),0);
-        double y1=N(C(i,0),1);
-        double y2=N(C(i,1),1);
-        double z1=N(C(i,0),2);
-        double z2=N(C(i,1),2);
+        double x1 = N(C(i, 0), 0);
+        double x2 = N(C(i, 1), 0);
+        double y1 = N(C(i, 0), 1);
+        double y2 = N(C(i, 1), 1);
+        double z1 = N(C(i, 0), 2);
+        double z2 = N(C(i, 1), 2);
         double thetax = 0;// axial rotation, could be user-defined in future
-        double thetay = atan2(x2-x1, z2-z1);// rotation in strong axis (think up-down on a standard I-beam)
-        double thetaz = atan2(x2-x1, y2-y1);// rotation in weak axis (left-right)
+        double thetay = atan2(x2 - x1, z2 - z1);// rotation in strong axis (think up-down on a standard I-beam)
+        double thetaz = atan2(x2 - x1, y2 - y1);// rotation in weak axis (left-right)
         Rx[i].resize(3, 3);
         Ry[i].resize(3, 3);
         Rz[i].resize(3, 3);
@@ -170,65 +171,50 @@ int main(int argc, char* argv[])
             0, 0, 0, -g * jj / l, 0, 0, 0, 0, 0, g* jj / l, 0, 0,
             0, 0, -6 * e * iy / l / l, 0, 2 * e * iy / l, 0, 0, 0, 6 * e * iy / l / l, 0, 4 * e * iy / l, 0,
             0, 6 * e * ix / l / l, 0, 0, 0, 2 * e * ix / l, 0, -6 * e * ix / l / l, 0, 0, 0, 4 * e * ix / l;
-        std::cout << std::endl << "Local stiffness:" << i << std::endl << K_local[i] << std::endl;
-        
-        MatrixXd ChonkeR(12,12);// this is the big rotation matrix 12x12
-        Matrix3d R=Rx[i]*Ry[i]*Rz[i];
+        //std::cout << std::endl << "Local stiffness:" << i << std::endl << K_local[i] << std::endl;
+
+        MatrixXd ChonkeR(12, 12);// this is the big rotation matrix 12x12
+        Matrix3d R = Rx[i] * Ry[i] * Rz[i];
         Matrix3d zeros;
-        zeros<<0,0,0,0,0,0,0,0,0;
-        ChonkeR<<R,zeros,zeros,zeros,zeros,R,zeros,zeros,zeros,zeros,R,zeros,zeros,zeros,zeros,R;
-        std::cout << std::endl << "Rotation matrix " << i << std::endl;
-        std::cout<<ChonkeR;
-        K_rotated_local[i]=K_local[i]*ChonkeR;
+        zeros << 0, 0, 0, 0, 0, 0, 0, 0, 0;
+        ChonkeR << R, zeros, zeros, zeros, zeros, R, zeros, zeros, zeros, zeros, R, zeros, zeros, zeros, zeros, R;
+        //std::cout << std::endl << "Rotation matrix " << i << std::endl;
+        //std::cout << ChonkeR << std::endl;
+        K_rotated_local[i] = ChonkeR.transpose() * K_local[i] * ChonkeR;
     }
 
 
     //Make global matrices
     //https://www.youtube.com/watch?v=vmjPL33Gugo&list=PLQVMpQ7G7XvHrdHLJgH8SeZQsiy2lQUcV&index=48
-    //     local_nodes=2;
-    // global_nodes=nNodes;
-    // elems=nMembers;
+    int local_nodes = 2;
+    int global_nodes = nNodes;
+    int elems = nMembers;
+    std::cout << std::endl << "Assembling global stiffness matrix..." << std::endl;
+    MatrixXd K = MatrixXd::Zero(nNodes * 6, nNodes * 6);
+    //There must be some optimization here.
+    for (int e = 0;e < elems;e++) {//for each element
+        for (i = 0;i < 12;i++) {//for each row in local k
+            for (j = 0;j < 12;j++) {//for each column in local k
+                int p = C(e, 0);//start node num
+                int q= C(e,0);
+                int offseti=0;
+                int offsetj=0;
+                if(i>5){
+                    p = C(e, 1);//end node num
+                    offseti=6;
+                }
+                if(j>5){
+                    q = C(e, 1);//end node num
+                    offsetj=6;
+                }
+                K(p * 6 + i-offseti, q * 6 + j-offsetj) += K_rotated_local[e](i, j);
+            }
+        }
+    }
+    std::cout << K << std::endl;
 
-// K=zeros(9);
-
-// for rect=1:elems
-//     K(:,:,rect)=zeros(9);
-// end
-
-// for i=1:local_nodes
-//     for j=1:local_nodes
-//         for k=1:elems
-//             if(k>1)
-//                 if(i<5)&&(j<5)
-//                     K(i,j,k)=i*100+j*10+k;
-//                 end
-//             else 
-//                 K(i,j,k)=i*100+j*10+k;
-//             end
-//         end
-//     end
-// end
-
-
-
-
-// C=[0,0,0,0,0,4,0,0,0;0,0,0,4,0,0,0,0,0;4,0,0,0,0,0,0,0,0]
-
-// K_global=zeros(max(max(C)));
-// K_global=string(K_global);
-
-// for e=1:elems
-//     for i=1:local_nodes
-//         for j=1:local_nodes
-//             p=C(e,i);
-//             q=C(e,j);
-//             if ((p~=0)&&(q~=0))
-//                 K_global(p,q)=strcat(strcat(num2str(K_global(p,q)),"+"),num2str(K(i,j,e)));
-//             end
-//         end
-//     end
-// end
-// K_global
-
-
+    std::cout << std::endl<<"Global Force vector:"<< std::endl;
+    //todo
+    std::cout << std::endl<<"Global Displacement vector:"<< std::endl;
+    //todo
 }
