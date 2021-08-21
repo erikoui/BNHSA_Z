@@ -102,6 +102,14 @@
                 "x":0,
                 "y":0,
                 "z":0
+            },
+            "constraints":{
+                "x":true,
+                "y":true,
+                "z":true,
+                "xx":true,
+                "yy":true,
+                "zz":true
             }
         },
         {
@@ -120,6 +128,14 @@
                 "x":0,
                 "y":0,
                 "z":0
+            },
+            "constraints":{
+                "x":false,
+                "y":false,
+                "z":false,
+                "xx":false,
+                "yy":false,
+                "zz":false
             }
         },
         {
@@ -139,6 +155,14 @@
                 "x":0,
                 "y":0,
                 "z":0
+            },
+            "constraints":{
+                "x":true,
+                "y":true,
+                "z":true,
+                "xx":true,
+                "yy":true,
+                "zz":true
             }
         },
         {
@@ -158,6 +182,14 @@
                 "x":0,
                 "y":0,
                 "z":0
+            },
+            "constraints":{
+                "x":false,
+                "y":false,
+                "z":false,
+                "xx":false,
+                "yy":false,
+                "zz":false
             }
         }
     ],

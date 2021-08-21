@@ -247,9 +247,8 @@ int main(int argc, char* argv[])
         std::cout << std::endl << "rotation matrix[" << i << "]: " << std::endl << rotationMatrices[i] << std::endl;
     }
     // then assemble global fl by putting the forces where they
-    // belong according to C. Care for rotations. Add external node forces here.
-    // THE GLOBALFORCE VECTOR MUST BE ADDED TO A VECTOR OF UNKNOWNS TO GET THE FINAL 
-    // FORCE VECTOR
+    // belong according to C. Care for rotations.
+ 
     for (int e = 0;e < elems;e++) {//for each element
         for (i = 0;i < 12;i++) {//for each row in local fl_local_rotated
             int p = C(e, 0);//start node num
@@ -261,9 +260,27 @@ int main(int argc, char* argv[])
             fl_global(p * 6 + i - offseti) += fl_local_rotated[e](i);
         }
     }
+    // TODO:  Add external node forces to global force vector.
     std::cout << std::endl << "Global Force vector:" << std::endl << fl_global << std::endl;
+    // THE GLOBAL FORCE VECTOR MUST BE ADDED TO A VECTOR OF UNKNOWNS (fb)TO GET THE FINAL FORCE VECTOR
+    // K * fd = fl+fb
+    
+    // VectorXd fd(nNodes*6);
+    // for(i=0;i<nNodes;i++){
+    //     fd(i)=//ux
+    //     fd(i+1)=//uy
+    //     fd(i+2)=//uz
+    //     fd(i+3)=//thetax
+    //     fd(i+4)=//thetay
+    //     fd(i+5)=//thetaz
+    // }
 
-
+    
     std::cout << std::endl << "Global Displacement vector:" << std::endl;
-    //todo
+
+        // Sort the rows of everything so that the top part is unknowns using a permutation matrix
+    // anyway see https://math.stackexchange.com/questions/3180714/solve-system-of-linear-equations-ax-b-with-x-and-b-partially-known
+
+       
+
 }
