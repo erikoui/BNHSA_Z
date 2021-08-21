@@ -162,3 +162,5 @@ yarn-debug.log*
 yarn-error.log*
 
 notes/
+
+json.hpp

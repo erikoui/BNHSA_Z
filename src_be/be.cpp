@@ -16,6 +16,9 @@
 #include <math.h>
 #include "C:/eigen/Eigen/StdVector"
 
+//Im using euler-bernoulli beams, but this might be useful if i decide to change to timoshenko (which i should)
+#define shear_lock_coeff 5/6
+
 using namespace Eigen;
 using json = nlohmann::json;
 
@@ -119,8 +122,8 @@ int main(int argc, char* argv[])
         double z1 = N(C(i, 0), 2);
         double z2 = N(C(i, 1), 2);
         double thetax = 0;// axial rotation, could be user-defined in future
-        double thetay = atan2(x2 - x1, z2 - z1);// rotation in strong axis (think up-down on a standard I-beam)
-        double thetaz = atan2(x2 - x1, y2 - y1);// rotation in weak axis (left-right)
+        double thetay = atan2(z2 - z1, x2 - x1);// rotation in strong axis (think up-down on a standard I-beam)
+        double thetaz = atan2(y2 - y1, x2 - x1);// rotation in weak axis (left-right)
         Rx[i].resize(3, 3);
         Ry[i].resize(3, 3);
         Rz[i].resize(3, 3);
@@ -138,6 +141,8 @@ int main(int argc, char* argv[])
     // local stiffness matrices
     std::vector<MatrixXd> K_local;
     std::vector<MatrixXd> K_rotated_local;
+    std::vector<MatrixXd> rotationMatrices;
+    rotationMatrices.resize(nMembers);
     K_local.resize(nMembers);
     K_rotated_local.resize(nMembers);
     // For now, we only store the area of the member as material info.
@@ -173,14 +178,14 @@ int main(int argc, char* argv[])
             0, 6 * e * ix / l / l, 0, 0, 0, 2 * e * ix / l, 0, -6 * e * ix / l / l, 0, 0, 0, 4 * e * ix / l;
         //std::cout << std::endl << "Local stiffness:" << i << std::endl << K_local[i] << std::endl;
 
-        MatrixXd ChonkeR(12, 12);// this is the big rotation matrix 12x12
-        Matrix3d R = Rx[i] * Ry[i] * Rz[i];
+        rotationMatrices[i].resize(12, 12);
+        Matrix3d R = Rz[i] * Ry[i] * Rx[i];
         Matrix3d zeros;
         zeros << 0, 0, 0, 0, 0, 0, 0, 0, 0;
-        ChonkeR << R, zeros, zeros, zeros, zeros, R, zeros, zeros, zeros, zeros, R, zeros, zeros, zeros, zeros, R;
+        rotationMatrices[i] << R, zeros, zeros, zeros, zeros, R, zeros, zeros, zeros, zeros, R, zeros, zeros, zeros, zeros, R;
         //std::cout << std::endl << "Rotation matrix " << i << std::endl;
-        //std::cout << ChonkeR << std::endl;
-        K_rotated_local[i] = ChonkeR.transpose() * K_local[i] * ChonkeR;
+        //std::cout << rotationMatrices << std::endl;
+        K_rotated_local[i] = rotationMatrices[i].transpose() * K_local[i] * rotationMatrices[i];
     }
 
 
@@ -196,25 +201,69 @@ int main(int argc, char* argv[])
         for (i = 0;i < 12;i++) {//for each row in local k
             for (j = 0;j < 12;j++) {//for each column in local k
                 int p = C(e, 0);//start node num
-                int q= C(e,0);
-                int offseti=0;
-                int offsetj=0;
-                if(i>5){
+                int q = C(e, 0);
+                int offseti = 0;
+                int offsetj = 0;
+                if (i > 5) {
                     p = C(e, 1);//end node num
-                    offseti=6;
+                    offseti = 6;
                 }
-                if(j>5){
+                if (j > 5) {
                     q = C(e, 1);//end node num
-                    offsetj=6;
+                    offsetj = 6;
                 }
-                K(p * 6 + i-offseti, q * 6 + j-offsetj) += K_rotated_local[e](i, j);
+                K(p * 6 + i - offseti, q * 6 + j - offsetj) += K_rotated_local[e](i, j);
             }
         }
     }
     std::cout << K << std::endl;
 
-    std::cout << std::endl<<"Global Force vector:"<< std::endl;
-    //todo
-    std::cout << std::endl<<"Global Displacement vector:"<< std::endl;
+    //for each ELEMENT
+    // if udl, fl=ql[0,1/2,0, 0,L/12,0,   0,1/2,0, 0,-L/12]
+    // I did not     ^  ^  ^  ^  ^   ^    ^  ^  ^  ^  ^   ^
+    // calculate    Fx Fy  Fz T  My  Mz  Fx  Fy Fz T  My  Mz
+    // this, but i  ---local-node-1----  ---local-node-2----         
+    // found it in a    
+    // book for 2d elems
+    // and assumed 
+    // APPLiED torsion and axial is zero??
+    std::vector<VectorXd> fl_local;
+    std::vector<VectorXd> fl_local_rotated;
+    fl_local.resize(nMembers);
+    fl_local_rotated.resize(nMembers);
+    VectorXd fl_global(nNodes * 6);
+    for (i = 0;i < nMembers;i++) {
+        fl_local[i].resize(12);
+        fl_local_rotated[i].resize(12);
+        // TODO: implement more load types other than udl
+        double l = L(i);// This was calculated in member properties above.
+        double qx = modelDb["FEmembers"][i]["udl"][0];// should always be zero anyway
+        double qy = modelDb["FEmembers"][i]["udl"][1];
+        double qz = modelDb["FEmembers"][i]["udl"][2];
+        fl_local[i] << qx * l / 2, qy* l / 2, qz* l / 2, qx* l* l / 24, qy* l* l / 24, qz* l* l / 24, qx* l / 2, qy* l / 2, qz* l / 2, qx* l* l / 24, qy* l* l / 24, qz* l* l / 24;
+        fl_local_rotated[i] = rotationMatrices[i] * fl_local[i];
+        std::cout << std::endl << "fl_local[" << i << "]: " << std::endl << fl_local[i] << std::endl;
+        std::cout << std::endl << "fl_local_rotated[" << i << "]: " << std::endl << fl_local_rotated[i] << std::endl;
+        std::cout << std::endl << "rotation matrix[" << i << "]: " << std::endl << rotationMatrices[i] << std::endl;
+    }
+    // then assemble global fl by putting the forces where they
+    // belong according to C. Care for rotations. Add external node forces here.
+    // THE GLOBALFORCE VECTOR MUST BE ADDED TO A VECTOR OF UNKNOWNS TO GET THE FINAL 
+    // FORCE VECTOR
+    for (int e = 0;e < elems;e++) {//for each element
+        for (i = 0;i < 12;i++) {//for each row in local fl_local_rotated
+            int p = C(e, 0);//start node num
+            int offseti = 0;
+            if (i > 5) {
+                p = C(e, 1);//end node num
+                offseti = 6;
+            }
+            fl_global(p * 6 + i - offseti) += fl_local_rotated[e](i);
+        }
+    }
+    std::cout << std::endl << "Global Force vector:" << std::endl << fl_global << std::endl;
+
+
+    std::cout << std::endl << "Global Displacement vector:" << std::endl;
     //todo
 }
