@@ -253,6 +253,9 @@ const makeFEArray = (modelDb) => {
 }
 
 const makeSolutionArray = (modelDb) => {
+    if(!modelDb.node_results){
+        return;
+    }
     let nodesize = 0.3;
     let rodsize = 0.15;
     let mesh = [];

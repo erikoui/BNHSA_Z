@@ -1,0 +1,388 @@
+{
+    "cols": [
+        {
+            "name": "k1",
+            "start": [
+                0,
+                0,
+                0
+            ],
+            "end": [
+                0,
+                0,
+                3
+            ],
+            "limits": {
+                "x": [
+                    -1,
+                    1
+                ],
+                "y": [
+                    -1,
+                    1
+                ]
+            },
+            "size": {
+                "x": 0.4,
+                "y": 0.25
+            }
+        },
+        {
+            "name": "k2",
+            "start": [
+                2,
+                0,
+                0
+            ],
+            "end": [
+                2,
+                0,
+                3
+            ],
+            "limits": {
+                "x": [
+                    -1,
+                    1
+                ],
+                "y": [
+                    -1,
+                    1
+                ]
+            },
+            "size": {
+                "x": 0.4,
+                "y": 0.25
+            }
+        },
+        {
+            "name": "k3",
+            "start": [
+                0,
+                2.5,
+                0
+            ],
+            "end": [
+                0,
+                2.5,
+                3
+            ],
+            "limits": {
+                "x": [
+                    -1,
+                    1
+                ],
+                "y": [
+                    -1,
+                    1
+                ]
+            },
+            "size": {
+                "x": 0.4,
+                "y": 0.25
+            }
+        },
+        {
+            "name": "k4",
+            "start": [
+                2,
+                2.5,
+                0
+            ],
+            "end": [
+                2,
+                2.5,
+                3
+            ],
+            "limits": {
+                "x": [
+                    -1,
+                    1
+                ],
+                "y": [
+                    -1,
+                    1
+                ]
+            },
+            "size": {
+                "x": 0.5,
+                "y": 0.25
+            }
+        }
+    ],
+    "beams": [
+        {
+            "name": "d1",
+            "start": [
+                0,
+                0,
+                3
+            ],
+            "end": [
+                2,
+                0,
+                3
+            ],
+            "limits": {
+                "x": [
+                    -1,
+                    1
+                ],
+                "z": [
+                    -1,
+                    1
+                ]
+            },
+            "size": {
+                "x": 0.25,
+                "z": -0.5
+            }
+        },
+        {
+            "name": "d2",
+            "start": [
+                2.15,
+                0,
+                3
+            ],
+            "end": [
+                2.15,
+                2.5,
+                3
+            ],
+            "limits": {
+                "x": [
+                    -1,
+                    1
+                ],
+                "z": [
+                    -1,
+                    1
+                ]
+            },
+            "size": {
+                "x": -0.25,
+                "z": -0.5
+            }
+        },
+        {
+            "name": "d3",
+            "start": [
+                2,
+                2.5,
+                3
+            ],
+            "end": [
+                0,
+                2.5,
+                3
+            ],
+            "limits": {
+                "x": [
+                    -1,
+                    1
+                ],
+                "z": [
+                    -1,
+                    1
+                ]
+            },
+            "size": {
+                "x": -0.25,
+                "z": -0.5
+            }
+        },
+        {
+            "name": "d4",
+            "start": [
+                0,
+                2.5,
+                3
+            ],
+            "end": [
+                0,
+                0,
+                3
+            ],
+            "limits": {
+                "x": [
+                    -1,
+                    1
+                ],
+                "z": [
+                    -1,
+                    1
+                ]
+            },
+            "size": {
+                "x": 0.25,
+                "z": -0.5
+            }
+        }
+    ],
+    "FEnodes": [
+        {
+            "colIndex": 0,
+            "name": 0,
+            "coords": [
+                0.2,
+                0.125,
+                0
+            ],"constraints":{
+                "x":true,
+                "y":true,
+                "z":true,
+                "xx":true,
+                "yy":true,
+                "zz":true
+            }
+        },
+        {
+            "colIndex": 0,
+            "name": 1,
+            "coords": [
+                0.2,
+                0.125,
+                3
+            ],"constraints":{
+                "x":false,
+                "y":false,
+                "z":false,
+                "xx":false,
+                "yy":false,
+                "zz":false
+            }
+        },
+        {
+            "colIndex": 1,
+            "name": 2,
+            "coords": [
+                2.2,
+                0.125,
+                0
+            ],"constraints":{
+                "x":true,
+                "y":true,
+                "z":true,
+                "xx":true,
+                "yy":true,
+                "zz":true
+            }
+        },
+        {
+            "colIndex": 1,
+            "name": 3,
+            "coords": [
+                2.2,
+                0.125,
+                3
+            ],"constraints":{
+                "x":false,
+                "y":false,
+                "z":false,
+                "xx":false,
+                "yy":false,
+                "zz":false
+            }
+        },
+        {
+            "colIndex": 2,
+            "name": 4,
+            "coords": [
+                0.2,
+                2.625,
+                0
+            ],"constraints":{
+                "x":true,
+                "y":true,
+                "z":true,
+                "xx":true,
+                "yy":true,
+                "zz":true
+            }
+        },
+        {
+            "colIndex": 2,
+            "name": 5,
+            "coords": [
+                0.2,
+                2.625,
+                3
+            ],"constraints":{
+                "x":false,
+                "y":false,
+                "z":false,
+                "xx":false,
+                "yy":false,
+                "zz":false
+            }
+        },
+        {
+            "colIndex": 3,
+            "name": 6,
+            "coords": [
+                2.25,
+                2.625,
+                0
+            ],"constraints":{
+                "x":true,
+                "y":true,
+                "z":true,
+                "xx":true,
+                "yy":true,
+                "zz":true
+            }
+        },
+        {
+            "colIndex": 3,
+            "name": 7,
+            "coords": [
+                2.25,
+                2.625,
+                3
+            ],"constraints":{
+                "x":false,
+                "y":false,
+                "z":false,
+                "xx":false,
+                "yy":false,
+                "zz":false
+            }
+        }
+    ],
+    "FEmembers": [
+        {
+            "from": 0,
+            "to": 1,"udl": [0,0,0]
+        },
+        {
+            "from": 2,
+            "to": 3,"udl": [0,0,0]
+        },
+        {
+            "from": 4,
+            "to": 5,"udl": [0,0,0]
+        },
+        {
+            "from": 6,
+            "to": 7,"udl": [0,0,0]
+        },
+        {
+            "from": 1,
+            "to": 3,"udl": [0,0,-1000]
+        },
+        {
+            "from": 3,
+            "to": 7,"udl": [0,0,0]
+        },
+        {
+            "from": 7,
+            "to": 5,"udl": [0,0,0]
+        },
+        {
+            "from": 5,
+            "to": 1,"udl": [0,0,0]
+        }
+    ],
+    "nodeLoads": [],
+    "nodeMoments": []
+}

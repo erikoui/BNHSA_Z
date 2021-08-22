@@ -331,10 +331,9 @@ int main(int argc, char* argv[])
         modelDb["node_results"].push_back(node_res);
     }
 
-    // Read entire file into memory
     // todo could fix the extension remover thing 
     std::string filename = std::string(argv[1]).substr(0,std::string(argv[1]).size()-5) + "_res.json";
-    std::cout << "Writing file " << filename << " ...";
+    std::cout << "Writing file \"" << filename << "\"...";
     std::ofstream ofile(filename);
     if (ofile.is_open()) {
         ofile << modelDb;
