@@ -102,6 +102,7 @@ int main(int argc, char* argv[])
     std::vector<MatrixXd> Rx(nMembers);
     std::vector<MatrixXd> Ry(nMembers);
     std::vector<MatrixXd> Rz(nMembers);
+    //std::vector<double> thetax(nMembers),thetay(nMembers),thetaz(nMembers);
     VectorXd G(nMembers);
     // For now, we only store the area of the member as material info.
     for (i = 0;i < nMembers;i++) {
@@ -230,7 +231,7 @@ int main(int argc, char* argv[])
     std::vector<VectorXd> fl_local;
     std::vector<VectorXd> fl_local_rotated;
     fl_local.resize(nMembers);
-    fl_local_rotated.resize(nMembers);
+    fl_local_rotated.resize(nMembers);// aka [F]
     VectorXd fl_global(nNodes * 6);
     for (i = 0;i < nMembers;i++) {
         fl_local[i].resize(12);
@@ -248,7 +249,7 @@ int main(int argc, char* argv[])
     }
     // then assemble global fl by putting the forces where they
     // belong according to C. Care for rotations.
- 
+
     for (int e = 0;e < elems;e++) {//for each element
         for (i = 0;i < 12;i++) {//for each row in local fl_local_rotated
             int p = C(e, 0);//start node num
@@ -262,25 +263,57 @@ int main(int argc, char* argv[])
     }
     // TODO:  Add external node forces to global force vector.
     std::cout << std::endl << "Global Force vector:" << std::endl << fl_global << std::endl;
+
     // THE GLOBAL FORCE VECTOR MUST BE ADDED TO A VECTOR OF UNKNOWNS (fb)TO GET THE FINAL FORCE VECTOR
     // K * fd = fl+fb
-    
-    // VectorXd fd(nNodes*6);
-    // for(i=0;i<nNodes;i++){
-    //     fd(i)=//ux
-    //     fd(i+1)=//uy
-    //     fd(i+2)=//uz
-    //     fd(i+3)=//thetax
-    //     fd(i+4)=//thetay
-    //     fd(i+5)=//thetaz
-    // }
 
-    
-    std::cout << std::endl << "Global Displacement vector:" << std::endl;
+    VectorXd fd(nNodes * 6);
+    std::vector<int> knowns_fd;// also known as [delta], [u] or [x]
+    for (i = 0;i < nNodes;i++) {
+        //if known (nodes[i])
+        if (modelDb["FEnodes"][i]["constraints"]["x"]) {
+            knowns_fd.push_back(i * 6);
+            fd(i * 6) = modelDb["FEnodes"][i]["coords"][0];
+        }
+        if (modelDb["FEnodes"][i]["constraints"]["y"]) {
+            knowns_fd.push_back(i * 6 + 1);
+            fd(i * 6 + 1) = modelDb["FEnodes"][i]["coords"][1];
+        }
+        if (modelDb["FEnodes"][i]["constraints"]["z"]) {
+            knowns_fd.push_back(i * 6 + 2);
+            fd(i * 6 + 2) = modelDb["FEnodes"][i]["coords"][2];
+        }
+        if (modelDb["FEnodes"][i]["constraints"]["xx"]) {
+            knowns_fd.push_back(i * 6 + 3);
+            fd(i * 6 + 3) = 0;// check this if correct, i have no mathematical knowledge about this
+        }
+        if (modelDb["FEnodes"][i]["constraints"]["yy"]) {
+            knowns_fd.push_back(i * 6 + 4);
+            fd(i * 6 + 4) = 0;// check this if correct, i have no mathematical knowledge about this
+        }
+        if (modelDb["FEnodes"][i]["constraints"]["zz"]) {
+            knowns_fd.push_back(i * 6 + 5);
+            fd(i * 6 + 5) = 0;// check this if correct, i have no mathematical knowledge about this
+        }
+    }
+    std::cout << std::endl << "Global Displacement vector:" <<fd<< std::endl;
 
-        // Sort the rows of everything so that the top part is unknowns using a permutation matrix
+    // im using penalty method
+    // penalty method: https://web.iitd.ac.in/~hegde/fem/lecture/lecture9.pdf
+    // alternative: Sort the rows of everything so that the top part is unknowns using a permutation matrix or penalty method
     // anyway see https://math.stackexchange.com/questions/3180714/solve-system-of-linear-equations-ax-b-with-x-and-b-partially-known
+    double large_stiffness = std::max(K.maxCoeff(), -K.minCoeff()) * 10000;// large stiffness
+    for (std::vector<int>::iterator it = knowns_fd.begin();it != knowns_fd.end();it++) {
+        int index = *it;//known displacement from BCs
+        double known_displacement = fd(index);
+        K(index, index) += large_stiffness;
+        fl_global(index) += large_stiffness * known_displacement;
+    }
 
-       
-
+    //solve KQ=F
+    //K*q=fl_global
+    MatrixXd q=K.lu().solve(fl_global);
+    std::cout<< "Nodal displacements and roations:"<<std::endl<<q<<std::endl;
+    
+    // TODO: Store results to JSON file 
 }
