@@ -21,12 +21,14 @@ import './ToolBar.css'
 
 const electron = window.require('electron');
 const remote = electron.remote
-const {dialog} = remote
+const { dialog } = remote
 
+let filenames;
 class ToolBar extends Component {
     render() {
         return (<div className="tool-bar">
             <button onClick={this.open}>Open</button>
+            <button onClick={this.reopen}>Reopen</button>
             <button onClick={this.save}>Save</button>
             <button onClick={this.genFEM}>Gen FE</button>
             <button onClick={this.togFEM}>toggle FE</button>
@@ -35,31 +37,36 @@ class ToolBar extends Component {
         </div>
         );
     }
-    open=()=> {
-        let filenames=dialog.showOpenDialogSync({title:"Open file"});
-        if(filenames){
+    open = () => {
+        filenames = dialog.showOpenDialogSync({ title: "Open file" });
+        if (filenames) {
             this.props.frontendsBackend.open(filenames[0]);
         }
     }
-    save=()=> {
-        let filename=dialog.showSaveDialogSync({title:"Save file"});
-        if(filename){
+    reopen = () => {
+        if (filenames) {
+            this.props.frontendsBackend.open(filenames[0]);
+        }
+    }
+    save = () => {
+        let filename = dialog.showSaveDialogSync({ title: "Save file" });
+        if (filename) {
             this.props.frontendsBackend.save(filename);
         }
     }
-    genFEM=()=>{
+    genFEM = () => {
         // TODO[Enhancement]: Ask to confirm if the user made changes to the FEModel
         // Also maybe remember which ones were edited and only update the new ones.
         // This is not a critical task.
         this.props.frontendsBackend.generateFEModel();
     }
-    togFEM=()=>{
+    togFEM = () => {
         this.props.frontendsBackend.toggleFEM();
     }
-    togConc=()=>{
+    togConc = () => {
         this.props.frontendsBackend.toggleConc();
     }
-    togSol=()=>{
+    togSol = () => {
         this.props.frontendsBackend.toggleSol();
     }
 }

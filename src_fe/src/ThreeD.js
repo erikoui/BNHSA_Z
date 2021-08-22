@@ -143,7 +143,7 @@ const FENode = (props) => {
             position={pos}
         >
             <boxGeometry args={[size, size, size]} />
-            <meshStandardMaterial attach="material" transparent side={THREE.DoubleSide} color={"red"}>
+            <meshStandardMaterial attach="material" transparent side={THREE.DoubleSide} color={props.color ? props.color : "red"}>
             </meshStandardMaterial>
         </mesh>
     );
@@ -175,7 +175,7 @@ const FERod = (props) => {
     return (
         <mesh>
             <extrudeGeometry attach="geometry" args={[shp, extrudeSettings]} />
-            <meshStandardMaterial color={"blue"}>
+            <meshStandardMaterial  color={props.color ? props.color : "red"}>
             </meshStandardMaterial>
         </mesh>
     )
@@ -218,7 +218,7 @@ const makeFEArray = (modelDb) => {
     let offset = -0.2;// how far from the node or member to put the 
     // Draw nodes
     for (let i = 0; i < modelDb.FEnodes.length; i++) {
-        mesh.push(<FENode c={modelDb.FEnodes[i].coords} size={nodesize} key={keyCounter++} />)
+        mesh.push(<FENode c={modelDb.FEnodes[i].coords} size={nodesize} key={keyCounter++} color="red" />)
         mesh.push(<FElabel text={"N" + i} position={[modelDb.FEnodes[i].coords[0] + offset, modelDb.FEnodes[i].coords[1] + offset, modelDb.FEnodes[i].coords[2] + offset]} />);
     }
     // Draw members
@@ -245,7 +245,7 @@ const makeFEArray = (modelDb) => {
         }
         if (found1 && found2) {
 
-            mesh.push(<FERod start={fromCoords} end={toCoords} w={rodsize} d={rodsize} key={keyCounter++} />)
+            mesh.push(<FERod start={fromCoords} end={toCoords} w={rodsize} d={rodsize} key={keyCounter++} color="blue" />)
             mesh.push(<FElabel text={"M" + i} position={[(fromCoords[0] + toCoords[0]) / 2 + offset, (fromCoords[1] + toCoords[1]) / 2 + offset, (fromCoords[2] + toCoords[2]) / 2 + offset]} />);
         }
     }
@@ -256,11 +256,9 @@ const makeSolutionArray = (modelDb) => {
     let nodesize = 0.3;
     let rodsize = 0.15;
     let mesh = [];
-    let offset = -0.2;// how far from the node or member to put the 
     // Draw nodes
     for (let i = 0; i < modelDb.FEnodes.length; i++) {
-        mesh.push(<FENode c={modelDb.FEnodes[i].coords} size={nodesize} key={keyCounter++} />)
-        mesh.push(<FElabel text={"N" + i} position={[modelDb.FEnodes[i].coords[0] + offset, modelDb.FEnodes[i].coords[1] + offset, modelDb.FEnodes[i].coords[2] + offset]} />);
+        mesh.push(<FENode c={[modelDb.node_results[i].x, modelDb.node_results[i].y, modelDb.node_results[i].z]} size={nodesize} key={keyCounter++} color="green" />)
     }
     // Draw members
     for (let i = 0; i < modelDb.FEmembers.length; i++) {
@@ -272,11 +270,11 @@ const makeSolutionArray = (modelDb) => {
 
         for (let j = 0; j < modelDb.FEnodes.length; j++) {
             if (modelDb.FEnodes[j].name === modelDb.FEmembers[i].from) {
-                fromCoords = modelDb.FEnodes[j].coords;
+                fromCoords = [modelDb.node_results[j].x, modelDb.node_results[j].y, modelDb.node_results[j].z];
                 found1 = true;
             }
             if (modelDb.FEnodes[j].name === modelDb.FEmembers[i].to) {
-                toCoords = modelDb.FEnodes[j].coords;
+                toCoords = [modelDb.node_results[j].x, modelDb.node_results[j].y, modelDb.node_results[j].z];
                 found2 = true;
             }
             if (found1 && found2) {
@@ -285,9 +283,7 @@ const makeSolutionArray = (modelDb) => {
             }
         }
         if (found1 && found2) {
-
-            mesh.push(<FERod start={fromCoords} end={toCoords} w={rodsize} d={rodsize} key={keyCounter++} />)
-            mesh.push(<FElabel text={"M" + i} position={[(fromCoords[0] + toCoords[0]) / 2 + offset, (fromCoords[1] + toCoords[1]) / 2 + offset, (fromCoords[2] + toCoords[2]) / 2 + offset]} />);
+            mesh.push(<FERod start={fromCoords} end={toCoords} w={rodsize} d={rodsize} key={keyCounter++} color="magenta" />)
         }
     }
     return mesh;
@@ -316,23 +312,20 @@ const CameraControls = () => {
     );
 };
 
-const doNothing = () => {
-    //xd
-}
 const ThreeD = (props) => {
-    keyCounter = 0; 
+    keyCounter = 0;
     THREE.Object3D.DefaultUp.set(0, 0, 1);
     let md = props.febe.modelDb;
     console.log(md);
-    let fe,c,s;
-    if(props.febe.concEnabled){
-        c=makeConcretesArray(md);
+    let fe, c, s;
+    if (props.febe.concEnabled) {
+        c = makeConcretesArray(md);
     }
-    if(props.febe.FEenabled){
-        fe=makeFEArray(md)
+    if (props.febe.FEenabled) {
+        fe = makeFEArray(md)
     }
-    if(props.febe.solEnabled){
-        s=makeSolutionArray(md);
+    if (props.febe.solEnabled) {
+        s = makeSolutionArray(md);
     }
     return (
         <Canvas>
