@@ -28,7 +28,10 @@ class ToolBar extends Component {
         return (<div className="tool-bar">
             <button onClick={this.open}>Open</button>
             <button onClick={this.save}>Save</button>
-            <button onClick={this.genFEM}>FE</button>
+            <button onClick={this.genFEM}>Gen FE</button>
+            <button onClick={this.togFEM}>toggle FE</button>
+            <button onClick={this.togConc}>toggle C</button>
+            <button onClick={this.togSol}>toggle S</button>
         </div>
         );
     }
@@ -49,7 +52,15 @@ class ToolBar extends Component {
         // Also maybe remember which ones were edited and only update the new ones.
         // This is not a critical task.
         this.props.frontendsBackend.generateFEModel();
-        // TODO[Critical]: Toggle 3d view between the realistic and the FE model.
+    }
+    togFEM=()=>{
+        this.props.frontendsBackend.toggleFEM();
+    }
+    togConc=()=>{
+        this.props.frontendsBackend.toggleConc();
+    }
+    togSol=()=>{
+        this.props.frontendsBackend.toggleSol();
     }
 }
 

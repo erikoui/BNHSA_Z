@@ -215,11 +215,11 @@ const makeFEArray = (modelDb) => {
     let nodesize = 0.3;
     let rodsize = 0.15;
     let mesh = [];
-    let offset=-0.2;// how far from the node or member to put the 
+    let offset = -0.2;// how far from the node or member to put the 
     // Draw nodes
     for (let i = 0; i < modelDb.FEnodes.length; i++) {
         mesh.push(<FENode c={modelDb.FEnodes[i].coords} size={nodesize} key={keyCounter++} />)
-        mesh.push(<FElabel text={"N" + i} position={[modelDb.FEnodes[i].coords[0]+offset,modelDb.FEnodes[i].coords[1]+offset,modelDb.FEnodes[i].coords[2]+offset]} />);
+        mesh.push(<FElabel text={"N" + i} position={[modelDb.FEnodes[i].coords[0] + offset, modelDb.FEnodes[i].coords[1] + offset, modelDb.FEnodes[i].coords[2] + offset]} />);
     }
     // Draw members
     for (let i = 0; i < modelDb.FEmembers.length; i++) {
@@ -244,9 +244,50 @@ const makeFEArray = (modelDb) => {
             }
         }
         if (found1 && found2) {
-            
+
             mesh.push(<FERod start={fromCoords} end={toCoords} w={rodsize} d={rodsize} key={keyCounter++} />)
-            mesh.push(<FElabel text={"M" + i} position={[(fromCoords[0] + toCoords[0]) / 2+offset, (fromCoords[1] + toCoords[1]) / 2+offset, (fromCoords[2] + toCoords[2]) / 2+offset]} />);
+            mesh.push(<FElabel text={"M" + i} position={[(fromCoords[0] + toCoords[0]) / 2 + offset, (fromCoords[1] + toCoords[1]) / 2 + offset, (fromCoords[2] + toCoords[2]) / 2 + offset]} />);
+        }
+    }
+    return mesh;
+}
+
+const makeSolutionArray = (modelDb) => {
+    let nodesize = 0.3;
+    let rodsize = 0.15;
+    let mesh = [];
+    let offset = -0.2;// how far from the node or member to put the 
+    // Draw nodes
+    for (let i = 0; i < modelDb.FEnodes.length; i++) {
+        mesh.push(<FENode c={modelDb.FEnodes[i].coords} size={nodesize} key={keyCounter++} />)
+        mesh.push(<FElabel text={"N" + i} position={[modelDb.FEnodes[i].coords[0] + offset, modelDb.FEnodes[i].coords[1] + offset, modelDb.FEnodes[i].coords[2] + offset]} />);
+    }
+    // Draw members
+    for (let i = 0; i < modelDb.FEmembers.length; i++) {
+        // find start,end
+        let fromCoords = undefined;
+        let toCoords = undefined;
+        let found1 = false;
+        let found2 = false;
+
+        for (let j = 0; j < modelDb.FEnodes.length; j++) {
+            if (modelDb.FEnodes[j].name === modelDb.FEmembers[i].from) {
+                fromCoords = modelDb.FEnodes[j].coords;
+                found1 = true;
+            }
+            if (modelDb.FEnodes[j].name === modelDb.FEmembers[i].to) {
+                toCoords = modelDb.FEnodes[j].coords;
+                found2 = true;
+            }
+            if (found1 && found2) {
+                console.log("found start and fin")
+                break;
+            }
+        }
+        if (found1 && found2) {
+
+            mesh.push(<FERod start={fromCoords} end={toCoords} w={rodsize} d={rodsize} key={keyCounter++} />)
+            mesh.push(<FElabel text={"M" + i} position={[(fromCoords[0] + toCoords[0]) / 2 + offset, (fromCoords[1] + toCoords[1]) / 2 + offset, (fromCoords[2] + toCoords[2]) / 2 + offset]} />);
         }
     }
     return mesh;
@@ -275,18 +316,32 @@ const CameraControls = () => {
     );
 };
 
-const ThreeD = (modelDb) => {
-    keyCounter = 0;
+const doNothing = () => {
+    //xd
+}
+const ThreeD = (props) => {
+    keyCounter = 0; 
     THREE.Object3D.DefaultUp.set(0, 0, 1);
-    let md = modelDb.modelDb;//idk why this is nescessary but dont remove it
+    let md = props.febe.modelDb;
     console.log(md);
+    let fe,c,s;
+    if(props.febe.concEnabled){
+        c=makeConcretesArray(md);
+    }
+    if(props.febe.FEenabled){
+        fe=makeFEArray(md)
+    }
+    if(props.febe.solEnabled){
+        s=makeSolutionArray(md);
+    }
     return (
         <Canvas>
             <ambientLight intensity={0.1} />
             <pointLight position={[100, 150, 120]} />
             <axesHelper size={5} />
-            {makeFEArray(md)}
-            {makeConcretesArray(md)}
+            {fe}
+            {c}
+            {s}
             <CameraControls />
             <Viewcube />
         </Canvas>

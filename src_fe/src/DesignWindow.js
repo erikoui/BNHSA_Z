@@ -29,7 +29,7 @@ class DesignWindow extends Component {
         return (
             <div className="design-window">
                 <ToolBar frontendsBackend={this.props.frontendsBackend} />
-                <ThreeD modelDb={this.props.frontendsBackend.modelDb} />
+                <ThreeD febe={this.props.frontendsBackend} />
             </div>
         );
     }

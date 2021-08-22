@@ -32,6 +32,10 @@ class FrontendsBackend {
         this.modelDb.FEmembers = [];
         this.modelDb.nodeLoads = [];
         this.modelDb.nodeMoments = [];
+
+        this.FEenabled = false;
+        this.concEnabled = false;
+        this.solEnabled = false;
     }
 
     // Function open
@@ -122,6 +126,19 @@ class FrontendsBackend {
             }
         }
         // TODO: check if there are other beam nodes e.g cantilever beams
+        ipcRenderer.send('modelChanged');
+    }
+
+    toggleFEM(){
+        this.FEenabled=!this.FEenabled;
+        ipcRenderer.send('modelChanged');
+    }
+    toggleConc(){
+        this.concEnabled=!this.concEnabled;
+        ipcRenderer.send('modelChanged');
+    }
+    toggleSol(){
+        this.solEnabled=!this.solEnabled;
         ipcRenderer.send('modelChanged');
     }
 }
