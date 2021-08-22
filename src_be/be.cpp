@@ -4,6 +4,8 @@
 // Possible enhancement: render stuff in the terminal with this
 // https://github.com/Victormeriqui/Consol3
 
+
+
 #include <iostream>
 #include <stdlib.h>
 // I dont know how to setup include directories
@@ -296,7 +298,7 @@ int main(int argc, char* argv[])
             fd(i * 6 + 5) = 0;// check this if correct, i have no mathematical knowledge about this
         }
     }
-    std::cout << std::endl << "Global Displacement vector:" <<fd<< std::endl;
+    std::cout << std::endl << "Global Displacement vector:" << fd << std::endl;
 
     // im using penalty method
     // penalty method: https://web.iitd.ac.in/~hegde/fem/lecture/lecture9.pdf
@@ -312,8 +314,34 @@ int main(int argc, char* argv[])
 
     //solve KQ=F
     //K*q=fl_global
-    MatrixXd q=K.lu().solve(fl_global);
-    std::cout<< "Nodal displacements and roations:"<<std::endl<<q<<std::endl;
-    
-    // TODO: Store results to JSON file 
+    MatrixXd q = K.lu().solve(fl_global);
+    std::cout << "Nodal displacements and roations:" << std::endl << q << std::endl;
+
+    // Store results to JSON file 
+
+    for (i = 0;i < nNodes;i++) {
+        json node_res = {
+            {"x",q(i * 6)},
+            {"y",q(i * 6 + 1)},
+            {"z",q(i * 6 + 2)},
+            {"rx",q(i * 6 + 3)},
+            {"ry",q(i * 6 + 4)},
+            {"rz",q(i * 6 + 5)}
+        };
+        modelDb["node_results"].push_back(node_res);
+    }
+
+    // Read entire file into memory
+    // todo could fix the extension remover thing 
+    std::string filename = std::string(argv[1]).substr(0,std::string(argv[1]).size()-5) + "_res.json";
+    std::cout << "Writing file " << filename << " ...";
+    std::ofstream ofile(filename);
+    if (ofile.is_open()) {
+        ofile << modelDb;
+    }
+    else {
+        std::cout << "Error writing to file." << std::endl;
+        exit(1);
+    }
+    std::cout << " Success." << std::endl;
 }
