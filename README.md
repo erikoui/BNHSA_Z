@@ -1,6 +1,6 @@
 # BNHSA_Z
 
-Structural analysis *and design* with good UI
+This project has been moved to erikoui/structure_optimizer
 
 ## Running the frontend
 Navigate to frontend directory: `cd src_fe`
