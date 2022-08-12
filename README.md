@@ -1,6 +1,8 @@
 # BNHSA_Z
 
-This project has been moved to erikoui/structure_optimizer
+*This project has been moved to erikoui/structure_optimizer*
+
+Used to be a 3-d Finite element solver for structures (Euler-bernoulli beam) including 3d representation in the frontend.
 
 ## Running the frontend
 Navigate to frontend directory: `cd src_fe`
